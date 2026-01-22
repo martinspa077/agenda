@@ -23,7 +23,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Verify build output
-RUN ls -la dist/ && test -f dist/main.js
+RUN ls -la dist/src/ && test -f dist/src/main.js
 
 # Production dependencies only
 FROM base AS deps
@@ -51,4 +51,4 @@ COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 USER nestjs
 EXPOSE 3000
 
-CMD npx prisma migrate deploy && node dist/main
+CMD npx prisma migrate deploy && node dist/src/main
