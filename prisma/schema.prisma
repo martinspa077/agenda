@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://admin:adminpassword@localhost:5433/sgc_continuidad?schema=public"
+  url      = env("DATABASE_URL")
 }
 
 
