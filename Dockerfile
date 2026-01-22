@@ -1,11 +1,12 @@
 # Base image
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Dependencies
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+COPY prisma ./prisma
+RUN npm ci --omit=dev
 
 # Builder
 FROM base AS builder
@@ -25,6 +26,7 @@ RUN adduser --system --uid 1001 nestjs
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/prisma ./prisma
 
 USER nestjs
 EXPOSE 3000
