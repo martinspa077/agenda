@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://admin:adminpassword@localhost:5433/sgc_continuidad?schema=public"
+}
+
+
+model Departamento {
+  id    Int    @id @default(autoincrement())
+  nombre String
+  unidades UnidadAsistencial[]
+}
+
+model UnidadAsistencial {
+  id              Int      @id @default(autoincrement())
+  nombre          String  
+  departamentoId  Int
+  departamento    Departamento @relation(fields: [departamentoId], references: [id])  
+  vinculos        Vinculo[]
+  activo          Boolean @default(true)
+}
+
+model Profesional {
+  id              Int      @id @default(autoincrement())
+  nombre          String
+  apellido        String
+  numeroDocumento String   @unique
+  vinculos        Vinculo[]
+  consultas       Consulta[]
+  licencias       Licencia[]
+}
+
+model Licencia {
+  id            Int      @id @default(autoincrement())
+  profesionalId Int
+  profesional   Profesional @relation(fields: [profesionalId], references: [id])
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  tipo          String   // e.g. "Licencia Médica", "Vacaciones"
+  motivo        String?
+  activo        Boolean  @default(true)
+}
+
+model Especialidad {
+  id            Int           @id @default(autoincrement())
+  nombre        String        @unique
+  vinculos      Vinculo[]
+}
+
+model Vinculo {
+  id              Int      @id @default(autoincrement())
+  profesionalId   Int
+  profesional     Profesional @relation(fields: [profesionalId], references: [id])
+  unidadId        Int
+  unidad          UnidadAsistencial @relation(fields: [unidadId], references: [id])
+  especialidadId  Int
+  especialidad    Especialidad @relation(fields: [especialidadId], references: [id])
+  agendasMes      AgendaMes[]
+
+  @@unique([profesionalId, unidadId, especialidadId])
+}
+
+model AgendaMes {
+  id            Int      @id @default(autoincrement())
+  mes           DateTime // Represents the month (e.g., 2023-10-01)
+  vinculoId     Int
+  vinculo       Vinculo  @relation(fields: [vinculoId], references: [id])
+  estado        String   // "Activa", "Inactiva"
+  agendas       Agenda[]
+}
+
+model Agenda {
+  id              Int      @id @default(autoincrement())
+  agendaMesId     Int
+  agendaMes       AgendaMes @relation(fields: [agendaMesId], references: [id])
+  fecha           DateTime
+  horario         String   // e.g. "08:00 - 12:00"
+  totalNros       Int
+  nroPresenciales Int
+  nroTelefonicos  Int
+  modo            String   // "Presencial", "Telefonico"
+  minConsulta     Int
+  consultas       Consulta[]
+}
+
+model Consulta {
+  id              Int      @id @default(autoincrement())
+  pacienteId      Int?
+  paciente        Paciente? @relation(fields: [pacienteId], references: [id])
+  profesionalId   Int
+  profesional     Profesional @relation(fields: [profesionalId], references: [id])
+  agendaId        Int
+  agenda          Agenda   @relation(fields: [agendaId], references: [id])
+  fechaHora       DateTime
+  estado          String   // "Libre", "Ocupada", "Cancelada"
+  tipo            String   // "Consulta", "Procedimiento", "Domicilio"
+  observaciones   String?
+  demandaOrigen   DemandaEnEspera?
+}
+
+model DemandaEnEspera {
+  id              Int      @id @default(autoincrement())
+  pacienteId      Int
+  paciente        Paciente @relation(fields: [pacienteId], references: [id])
+  prioridad       Int
+  origen          String   // "HCEA", "Ventanilla"
+  consultaGeneradaId Int? @unique
+  consultaGenerada Consulta? @relation(fields: [consultaGeneradaId], references: [id])
+  createdAt       DateTime @default(now())
+}
+
+
+model CuposDiferenciados {
+  id              Int      @id @default(autoincrement())
+  especialidad    String
+  subEspecialidad String
+  cupoMaximo      Int
+  prioridad       Int
+}
+
+model Feriado {
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime
+  descripcion String
+  activo      Boolean  @default(true)
+}
+
+model Paciente {
+  id              Int      @id @default(autoincrement())
+  nombre          String
+  apellido        String
+  tipoDocumento   String
+  nroDocumento    String   @unique
+  sexo            String
+  fechaNacimiento DateTime
+  consultas       Consulta[]
+  demandas        DemandaEnEspera[]
+}
