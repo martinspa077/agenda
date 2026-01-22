@@ -6,6 +6,7 @@ export interface AgendaSummaryDTO {
         id: number;
         nombre: string;
         apellido: string;
+        numeroDocumento: string;
     };
     especialidad: {
         id: number;
@@ -68,7 +69,8 @@ export class AgendaService {
                 profesional: {
                     id: v.profesional.id,
                     nombre: v.profesional.nombre,
-                    apellido: v.profesional.apellido
+                    apellido: v.profesional.apellido,
+                    numeroDocumento: v.profesional.numeroDocumento
                 },
                 especialidad: {
                     id: v.especialidad.id,

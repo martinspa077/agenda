@@ -39,7 +39,16 @@ export class ProfesionalService {
                 },
             },
             include: {
-                profesional: true,
+                profesional: {
+                    include: {
+                        licencias: {
+                            where: {
+                                activo: true,
+                                fechaFin: { gte: new Date() }
+                            }
+                        }
+                    }
+                },
                 especialidad: true,
                 agendasMes: {
                     include: {
@@ -82,7 +91,7 @@ export class ProfesionalService {
             unidadId: first.unidadId,
             especialidades: enrichedSpecialties,
             horarios: {}, // Removed from DB, returning empty
-            licencias: [], // Removed from DB, returning empty
+            licencias: first.profesional.licencias || [],
             agendas: flattenedAgendas,
         };
     }
