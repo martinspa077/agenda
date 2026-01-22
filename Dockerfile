@@ -11,7 +11,9 @@ RUN npm ci --omit=dev
 # Builder
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN npm ci
 COPY . .
 RUN npx prisma generate
 RUN npm run build
@@ -24,7 +26,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 
